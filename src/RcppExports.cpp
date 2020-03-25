@@ -5,9 +5,9 @@
 
 using namespace Rcpp;
 
-// temp_fun
-double temp_fun(double Tc, double Y_T, double DHa, double DSd, double DHd);
-RcppExport SEXP _xylomod_temp_fun(SEXP TcSEXP, SEXP Y_TSEXP, SEXP DHaSEXP, SEXP DSdSEXP, SEXP DHdSEXP) {
+// T_fun
+double T_fun(double Tc, double Y_T, double DHa, double DSd, double DHd);
+RcppExport SEXP _xylomod_T_fun(SEXP TcSEXP, SEXP Y_TSEXP, SEXP DHaSEXP, SEXP DSdSEXP, SEXP DHdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,35 +16,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type DHa(DHaSEXP);
     Rcpp::traits::input_parameter< double >::type DSd(DSdSEXP);
     Rcpp::traits::input_parameter< double >::type DHd(DHdSEXP);
-    rcpp_result_gen = Rcpp::wrap(temp_fun(Tc, Y_T, DHa, DSd, DHd));
+    rcpp_result_gen = Rcpp::wrap(T_fun(Tc, Y_T, DHa, DSd, DHd));
     return rcpp_result_gen;
 END_RCPP
 }
-// r_fun
-double r_fun(double psi, double Tc, double pi, double phi, double Y_P, double Y_T);
-RcppExport SEXP _xylomod_r_fun(SEXP psiSEXP, SEXP TcSEXP, SEXP piSEXP, SEXP phiSEXP, SEXP Y_PSEXP, SEXP Y_TSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< double >::type Tc(TcSEXP);
-    Rcpp::traits::input_parameter< double >::type pi(piSEXP);
-    Rcpp::traits::input_parameter< double >::type phi(phiSEXP);
-    Rcpp::traits::input_parameter< double >::type Y_P(Y_PSEXP);
-    Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
-    rcpp_result_gen = Rcpp::wrap(r_fun(psi, Tc, pi, phi, Y_P, Y_T));
-    return rcpp_result_gen;
-END_RCPP
-}
-// expansion
-DataFrame expansion(NumericVector psi, NumericVector Tc, int start, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
-RcppExport SEXP _xylomod_expansion(SEXP psiSEXP, SEXP TcSEXP, SEXP startSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
+// expand
+DataFrame expand(NumericVector psi, NumericVector Tc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
+RcppExport SEXP _xylomod_expand(SEXP psiSEXP, SEXP TcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type psi(psiSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Tc(TcSEXP);
-    Rcpp::traits::input_parameter< int >::type start(startSEXP);
     Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
     Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
     Rcpp::traits::input_parameter< double >::type CRD0(CRD0SEXP);
@@ -52,19 +35,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
     Rcpp::traits::input_parameter< double >::type h(hSEXP);
     Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    rcpp_result_gen = Rcpp::wrap(expansion(psi, Tc, start, phi0, pi0, CRD0, Y_P, Y_T, h, s));
+    rcpp_result_gen = Rcpp::wrap(expand(psi, Tc, phi0, pi0, CRD0, Y_P, Y_T, h, s));
     return rcpp_result_gen;
 END_RCPP
 }
-// expansion_seq
-List expansion_seq(NumericVector psi, NumericVector Tc, IntegerVector start_vec, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
-RcppExport SEXP _xylomod_expansion_seq(SEXP psiSEXP, SEXP TcSEXP, SEXP start_vecSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
+// expand_ring
+List expand_ring(List ring, NumericVector psi, NumericVector Tc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
+RcppExport SEXP _xylomod_expand_ring(SEXP ringSEXP, SEXP psiSEXP, SEXP TcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type ring(ringSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type psi(psiSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Tc(TcSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type start_vec(start_vecSEXP);
     Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
     Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
     Rcpp::traits::input_parameter< double >::type CRD0(CRD0SEXP);
@@ -72,34 +55,55 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
     Rcpp::traits::input_parameter< double >::type h(hSEXP);
     Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    rcpp_result_gen = Rcpp::wrap(expansion_seq(psi, Tc, start_vec, phi0, pi0, CRD0, Y_P, Y_T, h, s));
+    rcpp_result_gen = Rcpp::wrap(expand_ring(ring, psi, Tc, phi0, pi0, CRD0, Y_P, Y_T, h, s));
     return rcpp_result_gen;
 END_RCPP
 }
-// division
-DataFrame division(NumericVector psi, NumericVector Tc, double Nc, double phi, double pi, double Y_P, double Y_T);
-RcppExport SEXP _xylomod_division(SEXP psiSEXP, SEXP TcSEXP, SEXP NcSEXP, SEXP phiSEXP, SEXP piSEXP, SEXP Y_PSEXP, SEXP Y_TSEXP) {
+// divide
+DataFrame divide(NumericVector psi, NumericVector Tc, double Nc, double phi0, double pi0, double Y_P, double Y_T);
+RcppExport SEXP _xylomod_divide(SEXP psiSEXP, SEXP TcSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type psi(psiSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type Tc(TcSEXP);
     Rcpp::traits::input_parameter< double >::type Nc(NcSEXP);
-    Rcpp::traits::input_parameter< double >::type phi(phiSEXP);
-    Rcpp::traits::input_parameter< double >::type pi(piSEXP);
+    Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
+    Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
     Rcpp::traits::input_parameter< double >::type Y_P(Y_PSEXP);
     Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
-    rcpp_result_gen = Rcpp::wrap(division(psi, Tc, Nc, phi, pi, Y_P, Y_T));
+    rcpp_result_gen = Rcpp::wrap(divide(psi, Tc, Nc, phi0, pi0, Y_P, Y_T));
+    return rcpp_result_gen;
+END_RCPP
+}
+// grow_ring
+List grow_ring(List ring, NumericVector psi, NumericVector Tc, double Nc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
+RcppExport SEXP _xylomod_grow_ring(SEXP ringSEXP, SEXP psiSEXP, SEXP TcSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type ring(ringSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type psi(psiSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Tc(TcSEXP);
+    Rcpp::traits::input_parameter< double >::type Nc(NcSEXP);
+    Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
+    Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
+    Rcpp::traits::input_parameter< double >::type CRD0(CRD0SEXP);
+    Rcpp::traits::input_parameter< double >::type Y_P(Y_PSEXP);
+    Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< double >::type s(sSEXP);
+    rcpp_result_gen = Rcpp::wrap(grow_ring(ring, psi, Tc, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_xylomod_temp_fun", (DL_FUNC) &_xylomod_temp_fun, 5},
-    {"_xylomod_r_fun", (DL_FUNC) &_xylomod_r_fun, 6},
-    {"_xylomod_expansion", (DL_FUNC) &_xylomod_expansion, 10},
-    {"_xylomod_expansion_seq", (DL_FUNC) &_xylomod_expansion_seq, 10},
-    {"_xylomod_division", (DL_FUNC) &_xylomod_division, 7},
+    {"_xylomod_T_fun", (DL_FUNC) &_xylomod_T_fun, 5},
+    {"_xylomod_expand", (DL_FUNC) &_xylomod_expand, 9},
+    {"_xylomod_expand_ring", (DL_FUNC) &_xylomod_expand_ring, 10},
+    {"_xylomod_divide", (DL_FUNC) &_xylomod_divide, 7},
+    {"_xylomod_grow_ring", (DL_FUNC) &_xylomod_grow_ring, 11},
     {NULL, NULL, 0}
 };
 
