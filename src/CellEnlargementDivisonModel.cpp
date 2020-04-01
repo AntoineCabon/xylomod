@@ -11,37 +11,46 @@ double T0 = -273.15; // Absolute 0 temperature in degC
 double Tref = 15; // Reference temperature in degC
 
 /// Utility functions
-List _length_equalizer(NumericVector V1, NumericVector V2){
-  // Increase vectors length by repeating values in order to have final length equal to the longest
-  int l1 = V1.size();
-  int l2 = V2.size();
-  if(l1>l2) {
-    double V20=V2[0];
-    NumericVector _V2(l1,V20);
-    V2 = _V2;
-  } else {
-    double V10=V1[0];
-    NumericVector _V1(l2,V10);
-    V1=_V1;
+// List _length_equalizer(NumericVector V1, NumericVector V2){
+//   // Increase vectors length by repeating values in order to have final length equal to the longest
+//   int l1 = V1.size();
+//   int l2 = V2.size();
+//   if(l1>l2) {
+//     double V20=V2[0];
+//     NumericVector _V2(l1,V20);
+//     V2 = _V2;
+//   } else {
+//     double V10=V1[0];
+//     NumericVector _V1(l2,V10);
+//     V1=_V1;
+//   }
+//   return List::create(V1, V2);
+// }
+
+// NumericMatrix _matrix_enhancer(NumericMatrix mat, IntegerVector add_dim){
+//   /// Take a matrix and increases the number of rows and/or columns. New rows and columns are filled with zeros
+//   int ncols = mat.ncol();
+//   int nrows = mat.nrow();
+//   NumericMatrix temp(nrows+add_dim[0], ncols+add_dim[1]);
+//
+//   // fill new matrix with values from previous matrix
+//   for(int i=0; i<nrows; i++){
+//     for(int j=0; j<ncols; j++){
+//       temp(i,j) = mat(i,j);
+//     }
+//   }
+//
+//   mat = temp;
+//   return mat;
+// }
+
+double _sum(NumericVector v){
+  int l = v.size();
+  double res;
+  for(int i=0; i<l; i++){
+    res = res+v[i];
   }
-  return List::create(V1, V2);
-}
-
-NumericMatrix _matrix_enhancer(NumericMatrix mat, IntegerVector add_dim){
-  /// Take a matrix and increases the number of rows and/or columns. New rows and columns are filled with zeros
-  int ncols = mat.ncol();
-  int nrows = mat.nrow();
-  NumericMatrix temp(nrows+add_dim[0], ncols+add_dim[1]);
-
-  // fill new matrix with values from previous matrix
-  for(int i=0; i<nrows; i++){
-    for(int j=0; j<ncols; j++){
-      temp(i,j) = mat(i,j);
-    }
-  }
-
-  mat = temp;
-  return mat;
+  return res;
 }
 
 ////// Effect of temperature (on metabolic rate and microtubule stability)
@@ -86,9 +95,9 @@ double _r(double psi, double Tc, double pi, double phi, double Y_P, double Y_T){
   return out;
 }
 
-NumericVector _expand(double psi, double Tc,
-                      double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
-                      double Y_P=0.05, double Y_T=8, double h=0.043*1.8, double s=1.8){
+DataFrame _expand(double psi, double Tc,
+                  double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
+                  double Y_P=0.05, double Y_T=8, double h=0.043*1.8, double s=1.8){
   // default parameters from Cabon et al. New Phytologist 2020. h is different because of potential error in the ref value.
 
   double n = _pi2n(pi0, CRD0, Tref);
@@ -106,104 +115,135 @@ NumericVector _expand(double psi, double Tc,
   } else {}
 
   // return outputs
-  return(NumericVector::create(Named("phi")=phi1,
-                               Named("pi")=pi1,
-                               Named("CRD")=CRD1));
+  return(DataFrame::create(_["phi"]=phi1,
+                           _["pi"]=pi1,
+                           _["CRD"]=CRD1));
 }
 
 // [[Rcpp::export]]
-DataFrame expand(NumericVector psi, NumericVector Tc,
+DataFrame expand(DataFrame data,
                  double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
                  double Y_P=0.05, double Y_T=5, double h=0.043*1.8, double s=1.8){
 
-  List temp_list = _length_equalizer(psi, Tc);
-  psi = temp_list[0];
-  Tc = temp_list[1];
-  int l = psi.size();
+  NumericVector psi = data["psi"];
+  NumericVector Tc = data["Tc"];
+  StringVector date = data["date"];
+  int l = data.nrow();
 
   NumericVector CRD(l);
   NumericVector phi(l);
   NumericVector pi(l);
-  // NumericVector r(l);
-  NumericVector temp_vec;
+
+  DataFrame temp_df;
 
   for(int i=0; i<l; i++){
     if(i==0){
-      temp_vec = _expand(psi[i], Tc[i], phi0, pi0, CRD0, Y_P, Y_T, h, s);
+      temp_df = _expand(psi[i], Tc[i], phi0, pi0, CRD0, Y_P, Y_T, h, s);
     } else {
-      temp_vec = _expand(psi[i], Tc[i], phi[i-1], pi[i-1], CRD[i-1], Y_P, Y_T, h, s);
+      temp_df = _expand(psi[i], Tc[i], phi[i-1], pi[i-1], CRD[i-1], Y_P, Y_T, h, s);
     }
     // Variable update
     // r[i] = temp_vec["r"];
-    pi[i] = temp_vec["pi"];
-    phi[i] = temp_vec["phi"];
-    CRD[i] = temp_vec["CRD"];
+    pi[i] = temp_df["pi"];
+    phi[i] = temp_df["phi"];
+    CRD[i] = temp_df["CRD"];
   }
 
   // return outputs
-  return(DataFrame::create(Named("phi")=phi,
+  return(DataFrame::create(Named("date")=date,
+                           Named("phi")=phi,
                            Named("pi")=pi,
                            Named("CRD")=CRD));
 }
 
 List _expand_ring(List ring, double psi, double Tc,
-                 double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
-                 double Y_P=0.05, double Y_T=5, double h=0.043*1.8, double s=1.8){
+                       double Y_P=0.05, double Y_T=5, double h=0.043*1.8, double s=1.8){
 
-  if(ring[0] == R_NilValue){
-    // Create new matrices
-    NumericMatrix phi(1,1);
-    NumericMatrix pi(1,1);
-    NumericMatrix CRD(1,1);
+  DataFrame cells = as<DataFrame>(ring["cells"]);
+  NumericVector phi = cells["phi"];
+  NumericVector pi = cells["pi"];
+  NumericVector CRD = cells["CRD"];
+  int l = cells.nrow();
 
-    NumericVector temp = _expand(psi, Tc, phi0, pi0, CRD0, Y_P, Y_T, h, s);
+  for(int i=0; i<l; i++){
+    DataFrame temp = _expand(psi, Tc,
+                             phi[i], pi[i], CRD[i],
+                             Y_P, Y_T, h, s);
 
-    phi(0,0) = temp["phi"];
-    pi(0,0) = temp["pi"];
-    CRD(0,0) = temp["CRD"];
-
-    ring = List::create(_["phi"]=phi,
-                        _["pi"]=pi,
-                        _["CRD"]=CRD);
-  } else {
-    // Increase number of rows by one
-    NumericMatrix phi = _matrix_enhancer(ring["phi"], IntegerVector {1,0});
-    NumericMatrix pi = _matrix_enhancer(ring["pi"], IntegerVector {1,0});
-    NumericMatrix CRD = _matrix_enhancer(ring["CRD"], IntegerVector {1,0});
-    int nrows = CRD.nrow();
-    int ncols = CRD.ncol();
-
-    // fill new row with new simulated values
-    for(int i=0; i<ncols; i++){
-      NumericVector temp = _expand(psi, Tc,
-                                   phi(nrows-2,i),
-                                   pi(nrows-2,i),
-                                   CRD(nrows-2,i),
-                                   Y_P, Y_T, h, s);
-
-      phi(nrows-1,i) = temp["phi"];
-      pi(nrows-1,i) = temp["pi"];
-      CRD(nrows-1,i) = temp["CRD"];
-    }
-    ring["phi"] = phi;
-    ring["pi"] = pi;
-    ring["CRD"] = CRD;
+    phi[i] = temp["phi"];
+    pi[i] = temp["pi"];
+    CRD[i] = temp["CRD"];
   }
+
+  cells["phi"] = phi;
+  cells["pi"] = pi;
+  cells["CRD"] = CRD;
+
+  ring["cells"] = cells;
   return ring;
 }
 
 // [[Rcpp::export]]
-List expand_ring(List ring, NumericVector psi, NumericVector Tc,
-                  double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
+List expand_ring(List ring, DataFrame data,
                   double Y_P=0.05, double Y_T=5, double h=0.043*1.8, double s=1.8){
 
-  List temp = _length_equalizer(psi, Tc);
-  psi = temp[0];
-  Tc = temp[1];
-  int l = psi.size();
+  NumericVector psi = data["psi"];
+  NumericVector Tc = data["Tc"];
+  StringVector date = data["date"];
+  int nrows = data.nrow();
 
-  for(int i=0; i<l; i++){
-    ring = _expand_ring(ring, psi[i], Tc[i], phi0, pi0, CRD0, Y_P, Y_T, h, s);
+  DataFrame cells = as<DataFrame>(ring["cells"]);
+  int ncols = cells.nrow();
+
+  if(ring.attr("historic")){
+
+    NumericMatrix phi(nrows, ncols);
+    NumericMatrix pi(nrows, ncols);
+    NumericMatrix CRD(nrows, ncols);
+
+    for(int i=0; i<nrows; i++){
+      ring = _expand_ring(ring, psi[i], Tc[i], Y_P, Y_T, h, s);
+
+      cells = as<DataFrame>(ring["cells"]);
+      NumericVector phi_i = cells["phi"];
+      NumericVector pi_i = cells["pi"];
+      NumericVector CRD_i = cells["CRD"];
+
+      for(int j=0; j<ncols; j++){
+        phi(i,j) = phi_i[j];
+        pi(i,j) = pi_i[j];
+        CRD(i,j) = CRD_i[j];
+      }
+    }
+
+    StringVector colnm  = as<StringVector>(cells["formation_date"]);
+    for(int j=0; j<ncols; j++){
+      String str = "C";
+      str += j+1;
+      str += "_";
+      str += colnm[j];
+      colnm[j] = str;
+    }
+
+    rownames(phi) = date;
+    colnames(phi) = colnm;
+    rownames(pi) = date;
+    colnames(pi) = colnm;
+    rownames(CRD) = date;
+    colnames(CRD) = colnm;
+
+    List cells_historic;
+    cells_historic["phi"] = phi;
+    cells_historic["pi"] = pi;
+    cells_historic["CRD"] = CRD;
+    ring["cells_historic"] = cells_historic;
+
+  } else {
+    for(int i=0; i<nrows; i++){
+
+      ring = _expand_ring(ring, psi[i], Tc[i], Y_P, Y_T, h, s);
+
+    }
   }
 
   return ring;
@@ -211,8 +251,7 @@ List expand_ring(List ring, NumericVector psi, NumericVector Tc,
 
 
 ////// Cell division model
-
-NumericVector _divide(double psi, double Tc,
+double _divide(double psi, double Tc,
                       double Nc = 8.85, double phi0=0.13, double pi0=-0.8,
                       double Y_P=0.05, double Y_T=8){
   // Default parameters from Cabon et al New Phytologist (2020)
@@ -223,68 +262,202 @@ NumericVector _divide(double psi, double Tc,
   r = _r(psi, Tc, pi_Tcorr, phi0, Y_P, Y_T);
   P = r/log(2)*Nc;
 
-  return(NumericVector::create(Named("r") = r,
-                               Named("P") = P));
+  return(P);
 }
 
 // [[Rcpp::export]]
-DataFrame divide(NumericVector psi, NumericVector Tc,
-                 double Nc = 8.85, double phi0=0.13, double pi0=-0.8,
-                 double Y_P=0.05, double Y_T=5){
-  List temp_list = _length_equalizer(psi, Tc);
-  psi = temp_list[0];
-  Tc = temp_list[1];
-  int l = psi.size();
+NumericVector divide(DataFrame data,
+                     double Nc = 8.85, double phi0=0.13, double pi0=-0.8,
+                     double Y_P=0.05, double Y_T=5){
 
-  NumericVector r(l);
+  NumericVector psi = data["psi"];
+  NumericVector Tc = data["Tc"];
+  StringVector date = data["date"];
+  int l = data.nrow();
+
   NumericVector P(l);
   for(int i = 0; i<l; i++){
-    NumericVector temp_vec = _divide(psi[i], Tc[i], Nc, phi0, pi0, Y_P, Y_T);
-    r[i] = temp_vec["r"];
-    P[i] = temp_vec["P"];
+    P[i] = _divide(psi[i], Tc[i], Nc, phi0, pi0, Y_P, Y_T);
   }
-  return(DataFrame::create(Named("r") = r,
-                           Named("P") = P));
+  P.names() = date;
+  return(P);
 }
 
 
 //// Combine expansion and division functions to simulate ring growth
+List _grow_ring(List ring, double psi, double Tc, String date,
+                 double Nc=8.85, double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
+                 double Y_P=0.05, double Y_T=8, double h=0.043*1.8, double s=1.8){
 
-List _grow_ring(List ring, double psi, double Tc,
-                double Nc=8.85, double phi0=0.13, double pi0=-0.8, double CRD0 = 8.3,
-                double Y_P=0.05, double Y_T=8, double h=0.043*1.8, double s=1.8){
-  List exp = _expand_ring(ring, psi, Tc, phi0, pi0, CRD0, Y_P, Y_T, h, s);
-  NumericVector div = _divide(psi, Tc, Nc, phi0, pi0, Y_P, Y_T);
+  DataFrame cells = as<DataFrame>(ring["cells"]);
+  NumericVector phi = cells["phi"];
+  NumericVector pi = cells["pi"];
+  NumericVector CRD = cells["CRD"];
+  StringVector formation_date = cells["formation_date"];
 
-  if(ring[0]==R_NilValue){
-    ring["P"] = div["P"];
-  }else{
-    NumericVector P = ring["P"];
-    P.push_back(div["P"]);
-    ring["P"] = P;
+  DataFrame divisions = as<DataFrame>(ring["divisions"]);
+  NumericVector P = divisions["P"];
+  StringVector P_dates = divisions["date"];
+
+  // Calculate cell production
+  double P_i = _divide(psi, Tc, Nc, phi0, pi0, Y_P, Y_T);
+  // Update the cell production vector
+  P.push_back(P_i);
+  P_dates.push_back(date);
+  divisions = DataFrame::create(_["date"] = P_dates,
+                                _["P"] = P);
+
+  if (ring.attr("cell_wise")){
+
+    // Calculate the whole number of cells formed at the current and previous timestep
+    double Pold = _sum(divisions["P"]); int Pold_int = floor(Pold);
+    double Pnew = Pold+P_i; int Pnew_int = floor(Pnew);
+    // Add a new value in the cell expansion vectors for each whole cell number increment
+    for (int i=0; i < Pnew_int-Pold_int; i++){
+      // Update cell expansion vectors
+      phi.push_back(phi0);
+      pi.push_back(pi0);
+      CRD.push_back(CRD0);
+      formation_date.push_back(date);
+    }
+
+  } else {
+    // Update cell expansion vectors
+    phi.push_back(phi0);
+    pi.push_back(pi0);
+    CRD.push_back(CRD0);
+    formation_date.push_back(date);
   }
 
-  ring["phi"] = exp["phi"];
-  ring["pi"] = exp["pi"];
-  ring["CRD"] = exp["CRD"];
+  // Create new cells data frame
+  cells = DataFrame::create(_["formation_date"] = formation_date,
+                            _["phi"] = phi,
+                            _["pi"] = pi,
+                            _["CRD"] = CRD);
+  // Update ring object
+  ring["divisions"] = divisions;
+  ring["cells"] = cells;
+  // Calculate cell expansion
+  ring = _expand_ring(ring, psi, Tc, Y_P, Y_T, h, s);
 
   return(ring);
 }
 
 // [[Rcpp::export]]
-List grow_ring(List ring, NumericVector psi, NumericVector Tc,
-                double Nc=8.85, double phi0=0.13, double pi0=-0.8, double CRD0 = 8.3,
-                double Y_P=0.05, double Y_T=8, double h=0.043*1.8, double s=1.8){
+List grow_ring(List ring, DataFrame data,
+               double Nc=8.85, double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
+               double Y_P=0.05, double Y_T=8, double h=0.043*1.8, double s=1.8){
 
-  List temp_list = _length_equalizer(psi, Tc);
-  psi = temp_list[0];
-  Tc = temp_list[1];
-  int l = psi.size();
+  NumericVector psi = data["psi"];
+  NumericVector Tc = data["Tc"];
+  StringVector date = data["date"];
+  int nrows = data.nrow();
+  int ncols;
 
-  for(int i=0; i<l; i++){
-    ring = _grow_ring(ring, psi[i], Tc[i],
-                      Nc, phi0, pi0, CRD0,
-                      Y_P, Y_T, h, s);
+  DataFrame cells = as<DataFrame>(ring["cells"]);
+  int previous_cols = cells.nrow();
+
+  DataFrame divisions = as<DataFrame>(ring["divisions"]);
+
+  if (ring.attr("cell_wise")){
+
+    double previous_P = _sum(divisions["P"]);
+    double remaining_P = previous_P - floor(previous_P);
+    NumericVector P = divide(data, Nc, phi0, pi0, Y_P, Y_T);
+    double new_P = _sum(P);
+    int new_cols = floor(new_P+remaining_P);
+    ncols = previous_cols+new_cols;
+
+  } else {
+    ncols = previous_cols+nrows;
   }
-  return(ring);
+
+  if(ring.attr("historic")){
+
+    NumericMatrix phi(nrows, ncols);
+    NumericMatrix pi(nrows, ncols);
+    NumericMatrix CRD(nrows, ncols);
+
+    for(int i=0; i<nrows; i++){
+      ring = _grow_ring(ring, psi[i], Tc[i], date[i],
+                         Nc, phi0, pi0, CRD0,
+                         Y_P, Y_T, h, s);
+
+      cells = ring["cells"];
+      NumericVector phi_i = cells["phi"];
+      NumericVector pi_i = cells["pi"];
+      NumericVector CRD_i = cells["CRD"];
+      int l = CRD_i.size();
+
+      for(int j=0; j<l; j++){
+        phi(i,j) = phi_i[j];
+        pi(i,j) = pi_i[j];
+        CRD(i,j) = CRD_i[j];
+      }
+    }
+
+    StringVector colnm  = as<StringVector>(cells["formation_date"]);
+    for(int j=0; j<ncols; j++){
+      String str = "C";
+      str += j+1;
+      str += "_";
+      str += colnm[j];
+      colnm[j] = str;
+    }
+
+    rownames(phi) = date;
+    colnames(phi) = colnm;
+    rownames(pi) = date;
+    colnames(pi) = colnm;
+    rownames(CRD) = date;
+    colnames(CRD) = colnm;
+
+    List cells_historic;
+    cells_historic["phi"] = phi;
+    cells_historic["pi"] = pi;
+    cells_historic["CRD"] = CRD;
+    ring["cells_historic"] = cells_historic;
+
+  } else {
+    for(int i=0; i<nrows; i++){
+
+      ring = _grow_ring(ring, psi[i], Tc[i], date[i],
+                         Nc, phi0, pi0, CRD0,
+                         Y_P, Y_T, h, s);
+
+    }
+  }
+  return ring;
+}
+
+
+// [[Rcpp::export]]
+List initialize_ring(bool cell_wise = 0, bool historic = 0){
+
+  StringVector date;
+  NumericVector P;
+  NumericVector phi;
+  NumericVector pi;
+  NumericVector CRD;
+
+  DataFrame cells = DataFrame::create(_["formation_date"] = date,
+                                      _["phi"] = phi,
+                                      _["pi"] = pi,
+                                      _["CRD"] = CRD);
+
+  DataFrame divisions = DataFrame::create(_["date"] = date,
+                                          _["P"] = P);
+
+  List ring = List::create(_["divisions"] = divisions,
+                           _["cells"] = cells);
+
+  if(historic){
+    List cells_historic;
+    ring["cells_historic"] = cells_historic;
+  }
+
+  ring.attr("cell_wise") = cell_wise;
+  ring.attr("historic") = historic;
+
+  return ring;
 }
