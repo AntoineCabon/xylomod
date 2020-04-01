@@ -5,19 +5,23 @@ T_fun <- function(Tc, Y_T = 8, DHa = 87.5e3, DSd = 1.09e3, DHd = 333e3) {
     .Call(`_xylomod_T_fun`, Tc, Y_T, DHa, DSd, DHd)
 }
 
-expand <- function(psi, Tc, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3, Y_P = 0.05, Y_T = 5, h = 0.043*1.8, s = 1.8) {
-    .Call(`_xylomod_expand`, psi, Tc, phi0, pi0, CRD0, Y_P, Y_T, h, s)
+expand <- function(data, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3, Y_P = 0.05, Y_T = 5, h = 0.043*1.8, s = 1.8) {
+    .Call(`_xylomod_expand`, data, phi0, pi0, CRD0, Y_P, Y_T, h, s)
 }
 
-expand_ring <- function(ring, psi, Tc, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3, Y_P = 0.05, Y_T = 5, h = 0.043*1.8, s = 1.8) {
-    .Call(`_xylomod_expand_ring`, ring, psi, Tc, phi0, pi0, CRD0, Y_P, Y_T, h, s)
+expand_ring <- function(ring, data, Y_P = 0.05, Y_T = 5, h = 0.043*1.8, s = 1.8) {
+    .Call(`_xylomod_expand_ring`, ring, data, Y_P, Y_T, h, s)
 }
 
-divide <- function(psi, Tc, Nc = 8.85, phi0 = 0.13, pi0 = -0.8, Y_P = 0.05, Y_T = 5) {
-    .Call(`_xylomod_divide`, psi, Tc, Nc, phi0, pi0, Y_P, Y_T)
+divide <- function(data, Nc = 8.85, phi0 = 0.13, pi0 = -0.8, Y_P = 0.05, Y_T = 5) {
+    .Call(`_xylomod_divide`, data, Nc, phi0, pi0, Y_P, Y_T)
 }
 
-grow_ring <- function(ring, psi, Tc, Nc = 8.85, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3, Y_P = 0.05, Y_T = 8, h = 0.043*1.8, s = 1.8) {
-    .Call(`_xylomod_grow_ring`, ring, psi, Tc, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s)
+grow_ring <- function(ring, data, Nc = 8.85, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3, Y_P = 0.05, Y_T = 8, h = 0.043*1.8, s = 1.8) {
+    .Call(`_xylomod_grow_ring`, ring, data, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s)
+}
+
+initialize_ring <- function(cell_wise = 0L, historic = 0L) {
+    .Call(`_xylomod_initialize_ring`, cell_wise, historic)
 }
 

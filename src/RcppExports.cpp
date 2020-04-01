@@ -21,13 +21,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // expand
-DataFrame expand(NumericVector psi, NumericVector Tc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
-RcppExport SEXP _xylomod_expand(SEXP psiSEXP, SEXP TcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
+DataFrame expand(DataFrame data, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
+RcppExport SEXP _xylomod_expand(SEXP dataSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Tc(TcSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type data(dataSEXP);
     Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
     Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
     Rcpp::traits::input_parameter< double >::type CRD0(CRD0SEXP);
@@ -35,56 +34,50 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
     Rcpp::traits::input_parameter< double >::type h(hSEXP);
     Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    rcpp_result_gen = Rcpp::wrap(expand(psi, Tc, phi0, pi0, CRD0, Y_P, Y_T, h, s));
+    rcpp_result_gen = Rcpp::wrap(expand(data, phi0, pi0, CRD0, Y_P, Y_T, h, s));
     return rcpp_result_gen;
 END_RCPP
 }
 // expand_ring
-List expand_ring(List ring, NumericVector psi, NumericVector Tc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
-RcppExport SEXP _xylomod_expand_ring(SEXP ringSEXP, SEXP psiSEXP, SEXP TcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
+List expand_ring(List ring, DataFrame data, double Y_P, double Y_T, double h, double s);
+RcppExport SEXP _xylomod_expand_ring(SEXP ringSEXP, SEXP dataSEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type ring(ringSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Tc(TcSEXP);
-    Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
-    Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
-    Rcpp::traits::input_parameter< double >::type CRD0(CRD0SEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type data(dataSEXP);
     Rcpp::traits::input_parameter< double >::type Y_P(Y_PSEXP);
     Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
     Rcpp::traits::input_parameter< double >::type h(hSEXP);
     Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    rcpp_result_gen = Rcpp::wrap(expand_ring(ring, psi, Tc, phi0, pi0, CRD0, Y_P, Y_T, h, s));
+    rcpp_result_gen = Rcpp::wrap(expand_ring(ring, data, Y_P, Y_T, h, s));
     return rcpp_result_gen;
 END_RCPP
 }
 // divide
-DataFrame divide(NumericVector psi, NumericVector Tc, double Nc, double phi0, double pi0, double Y_P, double Y_T);
-RcppExport SEXP _xylomod_divide(SEXP psiSEXP, SEXP TcSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP) {
+NumericVector divide(DataFrame data, double Nc, double phi0, double pi0, double Y_P, double Y_T);
+RcppExport SEXP _xylomod_divide(SEXP dataSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Tc(TcSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type data(dataSEXP);
     Rcpp::traits::input_parameter< double >::type Nc(NcSEXP);
     Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
     Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
     Rcpp::traits::input_parameter< double >::type Y_P(Y_PSEXP);
     Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
-    rcpp_result_gen = Rcpp::wrap(divide(psi, Tc, Nc, phi0, pi0, Y_P, Y_T));
+    rcpp_result_gen = Rcpp::wrap(divide(data, Nc, phi0, pi0, Y_P, Y_T));
     return rcpp_result_gen;
 END_RCPP
 }
 // grow_ring
-List grow_ring(List ring, NumericVector psi, NumericVector Tc, double Nc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
-RcppExport SEXP _xylomod_grow_ring(SEXP ringSEXP, SEXP psiSEXP, SEXP TcSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
+List grow_ring(List ring, DataFrame data, double Nc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
+RcppExport SEXP _xylomod_grow_ring(SEXP ringSEXP, SEXP dataSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type ring(ringSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Tc(TcSEXP);
+    Rcpp::traits::input_parameter< DataFrame >::type data(dataSEXP);
     Rcpp::traits::input_parameter< double >::type Nc(NcSEXP);
     Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
     Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
@@ -93,17 +86,30 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
     Rcpp::traits::input_parameter< double >::type h(hSEXP);
     Rcpp::traits::input_parameter< double >::type s(sSEXP);
-    rcpp_result_gen = Rcpp::wrap(grow_ring(ring, psi, Tc, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s));
+    rcpp_result_gen = Rcpp::wrap(grow_ring(ring, data, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s));
+    return rcpp_result_gen;
+END_RCPP
+}
+// initialize_ring
+List initialize_ring(bool cell_wise, bool historic);
+RcppExport SEXP _xylomod_initialize_ring(SEXP cell_wiseSEXP, SEXP historicSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< bool >::type cell_wise(cell_wiseSEXP);
+    Rcpp::traits::input_parameter< bool >::type historic(historicSEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_ring(cell_wise, historic));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_xylomod_T_fun", (DL_FUNC) &_xylomod_T_fun, 5},
-    {"_xylomod_expand", (DL_FUNC) &_xylomod_expand, 9},
-    {"_xylomod_expand_ring", (DL_FUNC) &_xylomod_expand_ring, 10},
-    {"_xylomod_divide", (DL_FUNC) &_xylomod_divide, 7},
-    {"_xylomod_grow_ring", (DL_FUNC) &_xylomod_grow_ring, 11},
+    {"_xylomod_expand", (DL_FUNC) &_xylomod_expand, 8},
+    {"_xylomod_expand_ring", (DL_FUNC) &_xylomod_expand_ring, 6},
+    {"_xylomod_divide", (DL_FUNC) &_xylomod_divide, 6},
+    {"_xylomod_grow_ring", (DL_FUNC) &_xylomod_grow_ring, 10},
+    {"_xylomod_initialize_ring", (DL_FUNC) &_xylomod_initialize_ring, 2},
     {NULL, NULL, 0}
 };
 
