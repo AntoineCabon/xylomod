@@ -55,7 +55,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // divide
-NumericVector divide(DataFrame data, double Nc, double phi0, double pi0, double Y_P, double Y_T);
+DataFrame divide(DataFrame data, double Nc, double phi0, double pi0, double Y_P, double Y_T);
 RcppExport SEXP _xylomod_divide(SEXP dataSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

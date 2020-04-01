@@ -266,7 +266,7 @@ double _divide(double psi, double Tc,
 }
 
 // [[Rcpp::export]]
-NumericVector divide(DataFrame data,
+DataFrame divide(DataFrame data,
                      double Nc = 8.85, double phi0=0.13, double pi0=-0.8,
                      double Y_P=0.05, double Y_T=5){
 
@@ -279,8 +279,8 @@ NumericVector divide(DataFrame data,
   for(int i = 0; i<l; i++){
     P[i] = _divide(psi[i], Tc[i], Nc, phi0, pi0, Y_P, Y_T);
   }
-  P.names() = date;
-  return(P);
+
+  return(DataFrame::create(_["date"] = date, _["P"] = P));
 }
 
 
@@ -363,8 +363,8 @@ List grow_ring(List ring, DataFrame data,
 
     double previous_P = _sum(divisions["P"]);
     double remaining_P = previous_P - floor(previous_P);
-    NumericVector P = divide(data, Nc, phi0, pi0, Y_P, Y_T);
-    double new_P = _sum(P);
+    DataFrame new_divisions = divide(data, Nc, phi0, pi0, Y_P, Y_T);
+    double new_P = _sum(new_divisions["P"]);
     int new_cols = floor(new_P+remaining_P);
     ncols = previous_cols+new_cols;
 
