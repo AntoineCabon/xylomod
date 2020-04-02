@@ -70,6 +70,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// o_grow_ring
+List o_grow_ring(List ring, double psi, double Tc, Date date, double Nc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
+RcppExport SEXP _xylomod_o_grow_ring(SEXP ringSEXP, SEXP psiSEXP, SEXP TcSEXP, SEXP dateSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type ring(ringSEXP);
+    Rcpp::traits::input_parameter< double >::type psi(psiSEXP);
+    Rcpp::traits::input_parameter< double >::type Tc(TcSEXP);
+    Rcpp::traits::input_parameter< Date >::type date(dateSEXP);
+    Rcpp::traits::input_parameter< double >::type Nc(NcSEXP);
+    Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
+    Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
+    Rcpp::traits::input_parameter< double >::type CRD0(CRD0SEXP);
+    Rcpp::traits::input_parameter< double >::type Y_P(Y_PSEXP);
+    Rcpp::traits::input_parameter< double >::type Y_T(Y_TSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< double >::type s(sSEXP);
+    rcpp_result_gen = Rcpp::wrap(o_grow_ring(ring, psi, Tc, date, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s));
+    return rcpp_result_gen;
+END_RCPP
+}
 // grow_ring
 List grow_ring(List ring, DataFrame data, double Nc, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
 RcppExport SEXP _xylomod_grow_ring(SEXP ringSEXP, SEXP dataSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
@@ -91,14 +113,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // initialize_ring
-List initialize_ring(bool cell_wise, bool historic);
-RcppExport SEXP _xylomod_initialize_ring(SEXP cell_wiseSEXP, SEXP historicSEXP) {
+List initialize_ring(DateVector formation_date, bool cell_wise, bool historic, double phi0, double pi0, double CRD0);
+RcppExport SEXP _xylomod_initialize_ring(SEXP formation_dateSEXP, SEXP cell_wiseSEXP, SEXP historicSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DateVector >::type formation_date(formation_dateSEXP);
     Rcpp::traits::input_parameter< bool >::type cell_wise(cell_wiseSEXP);
     Rcpp::traits::input_parameter< bool >::type historic(historicSEXP);
-    rcpp_result_gen = Rcpp::wrap(initialize_ring(cell_wise, historic));
+    Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
+    Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
+    Rcpp::traits::input_parameter< double >::type CRD0(CRD0SEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_ring(formation_date, cell_wise, historic, phi0, pi0, CRD0));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -108,8 +134,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_xylomod_expand", (DL_FUNC) &_xylomod_expand, 8},
     {"_xylomod_expand_ring", (DL_FUNC) &_xylomod_expand_ring, 6},
     {"_xylomod_divide", (DL_FUNC) &_xylomod_divide, 6},
+    {"_xylomod_o_grow_ring", (DL_FUNC) &_xylomod_o_grow_ring, 12},
     {"_xylomod_grow_ring", (DL_FUNC) &_xylomod_grow_ring, 10},
-    {"_xylomod_initialize_ring", (DL_FUNC) &_xylomod_initialize_ring, 2},
+    {"_xylomod_initialize_ring", (DL_FUNC) &_xylomod_initialize_ring, 6},
     {NULL, NULL, 0}
 };
 

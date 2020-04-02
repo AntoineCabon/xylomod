@@ -17,11 +17,15 @@ divide <- function(data, Nc = 8.85, phi0 = 0.13, pi0 = -0.8, Y_P = 0.05, Y_T = 5
     .Call(`_xylomod_divide`, data, Nc, phi0, pi0, Y_P, Y_T)
 }
 
+o_grow_ring <- function(ring, psi, Tc, date, Nc = 8.85, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3, Y_P = 0.05, Y_T = 8, h = 0.043*1.8, s = 1.8) {
+    .Call(`_xylomod_o_grow_ring`, ring, psi, Tc, date, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s)
+}
+
 grow_ring <- function(ring, data, Nc = 8.85, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3, Y_P = 0.05, Y_T = 8, h = 0.043*1.8, s = 1.8) {
     .Call(`_xylomod_grow_ring`, ring, data, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s)
 }
 
-initialize_ring <- function(cell_wise = 0L, historic = 0L) {
-    .Call(`_xylomod_initialize_ring`, cell_wise, historic)
+initialize_ring <- function(formation_date = NA_integer_, cell_wise = 0L, historic = 0L, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3) {
+    .Call(`_xylomod_initialize_ring`, formation_date, cell_wise, historic, phi0, pi0, CRD0)
 }
 
