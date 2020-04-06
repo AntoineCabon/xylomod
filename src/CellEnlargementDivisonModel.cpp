@@ -127,7 +127,7 @@ DataFrame expand(DataFrame data,
 
   NumericVector psi = data["psi"];
   NumericVector Tc = data["Tc"];
-  StringVector date = data["date"];
+  DateVector date = data["date"];
   int l = data.nrow();
 
   NumericVector CRD(l);
@@ -156,23 +156,27 @@ DataFrame expand(DataFrame data,
                            Named("CRD")=CRD));
 }
 
-List _expand_ring(List ring, double psi, double Tc,
-                       double Y_P=0.05, double Y_T=5, double h=0.043*1.8, double s=1.8){
+List _expand_ring(List ring, double psi, double Tc, Date date,
+                  double Y_P=0.05, double Y_T=5, double h=0.043*1.8, double s=1.8){
 
   DataFrame cells = as<DataFrame>(ring["cells"]);
   NumericVector phi = cells["phi"];
   NumericVector pi = cells["pi"];
   NumericVector CRD = cells["CRD"];
+  DateVector formation_date = cells["formation_date"];
   int l = cells.nrow();
 
   for(int i=0; i<l; i++){
-    DataFrame temp = _expand(psi, Tc,
-                             phi[i], pi[i], CRD[i],
-                             Y_P, Y_T, h, s);
+    Date formation_date_i = formation_date[i];
+    if(date >= formation_date_i){
+      DataFrame temp = _expand(psi, Tc,
+                               phi[i], pi[i], CRD[i],
+                               Y_P, Y_T, h, s);
 
-    phi[i] = temp["phi"];
-    pi[i] = temp["pi"];
-    CRD[i] = temp["CRD"];
+      phi[i] = temp["phi"];
+      pi[i] = temp["pi"];
+      CRD[i] = temp["CRD"];
+    }
   }
 
   cells["phi"] = phi;
@@ -189,7 +193,7 @@ List expand_ring(List ring, DataFrame data,
 
   NumericVector psi = data["psi"];
   NumericVector Tc = data["Tc"];
-  StringVector date = data["date"];
+  DateVector date = data["date"];
   int nrows = data.nrow();
 
   DataFrame cells = as<DataFrame>(ring["cells"]);
@@ -202,7 +206,7 @@ List expand_ring(List ring, DataFrame data,
     NumericMatrix CRD(nrows, ncols);
 
     for(int i=0; i<nrows; i++){
-      ring = _expand_ring(ring, psi[i], Tc[i], Y_P, Y_T, h, s);
+      ring = _expand_ring(ring, psi[i], Tc[i], date[i], Y_P, Y_T, h, s);
 
       cells = as<DataFrame>(ring["cells"]);
       NumericVector phi_i = cells["phi"];
@@ -225,11 +229,11 @@ List expand_ring(List ring, DataFrame data,
       colnm[j] = str;
     }
 
-    rownames(phi) = date;
+    rownames(phi) = as<StringVector>(date);
     colnames(phi) = colnm;
-    rownames(pi) = date;
+    rownames(pi) = as<StringVector>(date);
     colnames(pi) = colnm;
-    rownames(CRD) = date;
+    rownames(CRD) = as<StringVector>(date);
     colnames(CRD) = colnm;
 
     List cells_historic;
@@ -241,7 +245,7 @@ List expand_ring(List ring, DataFrame data,
   } else {
     for(int i=0; i<nrows; i++){
 
-      ring = _expand_ring(ring, psi[i], Tc[i], Y_P, Y_T, h, s);
+      ring = _expand_ring(ring, psi[i], Tc[i], date[i], Y_P, Y_T, h, s);
 
     }
   }
@@ -252,8 +256,8 @@ List expand_ring(List ring, DataFrame data,
 
 ////// Cell division model
 double _divide(double psi, double Tc,
-                      double Nc = 8.85, double phi0=0.13, double pi0=-0.8,
-                      double Y_P=0.05, double Y_T=8){
+               double Nc = 8.85, double phi0=0.13, double pi0=-0.8,
+               double Y_P=0.05, double Y_T=8){
   // Default parameters from Cabon et al New Phytologist (2020)
 
   double r; //  Cell relative growth rate
@@ -266,26 +270,26 @@ double _divide(double psi, double Tc,
 }
 
 // [[Rcpp::export]]
-NumericVector divide(DataFrame data,
-                     double Nc = 8.85, double phi0=0.13, double pi0=-0.8,
-                     double Y_P=0.05, double Y_T=5){
+DataFrame divide(DataFrame data,
+                 double Nc = 8.85, double phi0=0.13, double pi0=-0.8,
+                 double Y_P=0.05, double Y_T=5){
 
   NumericVector psi = data["psi"];
   NumericVector Tc = data["Tc"];
-  StringVector date = data["date"];
+  DateVector date = data["date"];
   int l = data.nrow();
 
   NumericVector P(l);
   for(int i = 0; i<l; i++){
     P[i] = _divide(psi[i], Tc[i], Nc, phi0, pi0, Y_P, Y_T);
   }
-  P.names() = date;
-  return(P);
+
+  return(DataFrame::create(_["date"] = date, _["P"] = P));
 }
 
 
 //// Combine expansion and division functions to simulate ring growth
-List _grow_ring(List ring, double psi, double Tc, String date,
+List _grow_ring(List ring, double psi, double Tc, Date date,
                  double Nc=8.85, double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
                  double Y_P=0.05, double Y_T=8, double h=0.043*1.8, double s=1.8){
 
@@ -293,25 +297,25 @@ List _grow_ring(List ring, double psi, double Tc, String date,
   NumericVector phi = cells["phi"];
   NumericVector pi = cells["pi"];
   NumericVector CRD = cells["CRD"];
-  StringVector formation_date = cells["formation_date"];
+  DateVector formation_date = cells["formation_date"];
 
   DataFrame divisions = as<DataFrame>(ring["divisions"]);
   NumericVector P = divisions["P"];
-  StringVector P_dates = divisions["date"];
+  DateVector P_dates = divisions["date"];
 
   // Calculate cell production
   double P_i = _divide(psi, Tc, Nc, phi0, pi0, Y_P, Y_T);
   // Update the cell production vector
   P.push_back(P_i);
   P_dates.push_back(date);
-  divisions = DataFrame::create(_["date"] = P_dates,
+  divisions = DataFrame::create(_["date"] = as<DateVector>(P_dates),
                                 _["P"] = P);
 
   if (ring.attr("cell_wise")){
 
     // Calculate the whole number of cells formed at the current and previous timestep
-    double Pold = _sum(divisions["P"]); int Pold_int = floor(Pold);
-    double Pnew = Pold+P_i; int Pnew_int = floor(Pnew);
+    double Pnew = _sum(P); int Pnew_int = floor(Pnew);
+    double Pold = Pnew-P_i; int Pold_int = floor(Pold);
     // Add a new value in the cell expansion vectors for each whole cell number increment
     for (int i=0; i < Pnew_int-Pold_int; i++){
       // Update cell expansion vectors
@@ -338,7 +342,7 @@ List _grow_ring(List ring, double psi, double Tc, String date,
   ring["divisions"] = divisions;
   ring["cells"] = cells;
   // Calculate cell expansion
-  ring = _expand_ring(ring, psi, Tc, Y_P, Y_T, h, s);
+  ring = _expand_ring(ring, psi, Tc, date, Y_P, Y_T, h, s);
 
   return(ring);
 }
@@ -350,7 +354,7 @@ List grow_ring(List ring, DataFrame data,
 
   NumericVector psi = data["psi"];
   NumericVector Tc = data["Tc"];
-  StringVector date = data["date"];
+  DateVector date = data["date"];
   int nrows = data.nrow();
   int ncols;
 
@@ -363,20 +367,22 @@ List grow_ring(List ring, DataFrame data,
 
     double previous_P = _sum(divisions["P"]);
     double remaining_P = previous_P - floor(previous_P);
-    NumericVector P = divide(data, Nc, phi0, pi0, Y_P, Y_T);
-    double new_P = _sum(P);
+    DataFrame new_divisions = divide(data, Nc, phi0, pi0, Y_P, Y_T);
+    double new_P = _sum(new_divisions["P"]);
     int new_cols = floor(new_P+remaining_P);
     ncols = previous_cols+new_cols;
-
   } else {
     ncols = previous_cols+nrows;
   }
 
   if(ring.attr("historic")){
 
-    NumericMatrix phi(nrows, ncols);
-    NumericMatrix pi(nrows, ncols);
-    NumericMatrix CRD(nrows, ncols);
+    NumericVector phi(nrows*ncols, NA_REAL);
+    phi.attr("dim") = Dimension(nrows, ncols);
+    NumericVector pi(nrows*ncols, NA_REAL);
+    pi.attr("dim") = Dimension(nrows, ncols);
+    NumericVector CRD(nrows*ncols, NA_REAL);
+    CRD.attr("dim") = Dimension(nrows, ncols);
 
     for(int i=0; i<nrows; i++){
       ring = _grow_ring(ring, psi[i], Tc[i], date[i],
@@ -387,8 +393,8 @@ List grow_ring(List ring, DataFrame data,
       NumericVector phi_i = cells["phi"];
       NumericVector pi_i = cells["pi"];
       NumericVector CRD_i = cells["CRD"];
-      int l = CRD_i.size();
 
+      int l = cells.nrow();
       for(int j=0; j<l; j++){
         phi(i,j) = phi_i[j];
         pi(i,j) = pi_i[j];
@@ -405,11 +411,11 @@ List grow_ring(List ring, DataFrame data,
       colnm[j] = str;
     }
 
-    rownames(phi) = date;
+    rownames(phi) = as<StringVector>(date);
     colnames(phi) = colnm;
-    rownames(pi) = date;
+    rownames(pi) = as<StringVector>(date);
     colnames(pi) = colnm;
-    rownames(CRD) = date;
+    rownames(CRD) = as<StringVector>(date);
     colnames(CRD) = colnm;
 
     List cells_historic;
@@ -432,15 +438,25 @@ List grow_ring(List ring, DataFrame data,
 
 
 // [[Rcpp::export]]
-List initialize_ring(bool cell_wise = 0, bool historic = 0){
+List initialize_ring(DateVector formation_date = NA_INTEGER,
+                     bool cell_wise = false, bool historic = false,
+                     double phi0=0.13, double pi0=-0.8, double CRD0=8.3){
 
-  StringVector date;
+  Date formation_date1 = formation_date[0];
+  bool test_na = formation_date1.is_na();
+  if(test_na){
+    DateVector date_void(0);
+    formation_date = date_void;
+  }
+  int l = formation_date.size();
+  NumericVector phi(l, phi0);
+  NumericVector pi(l, pi0);
+  NumericVector CRD(l, CRD0);
+
+  DateVector date(0);
   NumericVector P;
-  NumericVector phi;
-  NumericVector pi;
-  NumericVector CRD;
 
-  DataFrame cells = DataFrame::create(_["formation_date"] = date,
+  DataFrame cells = DataFrame::create(_["formation_date"] = formation_date,
                                       _["phi"] = phi,
                                       _["pi"] = pi,
                                       _["CRD"] = CRD);

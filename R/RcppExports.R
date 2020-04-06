@@ -21,7 +21,7 @@ grow_ring <- function(ring, data, Nc = 8.85, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3
     .Call(`_xylomod_grow_ring`, ring, data, Nc, phi0, pi0, CRD0, Y_P, Y_T, h, s)
 }
 
-initialize_ring <- function(cell_wise = 0L, historic = 0L) {
-    .Call(`_xylomod_initialize_ring`, cell_wise, historic)
+initialize_ring <- function(formation_date = NA_integer_, cell_wise = FALSE, historic = FALSE, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3) {
+    .Call(`_xylomod_initialize_ring`, formation_date, cell_wise, historic, phi0, pi0, CRD0)
 }
 

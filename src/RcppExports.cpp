@@ -55,7 +55,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // divide
-NumericVector divide(DataFrame data, double Nc, double phi0, double pi0, double Y_P, double Y_T);
+DataFrame divide(DataFrame data, double Nc, double phi0, double pi0, double Y_P, double Y_T);
 RcppExport SEXP _xylomod_divide(SEXP dataSEXP, SEXP NcSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -91,14 +91,18 @@ BEGIN_RCPP
 END_RCPP
 }
 // initialize_ring
-List initialize_ring(bool cell_wise, bool historic);
-RcppExport SEXP _xylomod_initialize_ring(SEXP cell_wiseSEXP, SEXP historicSEXP) {
+List initialize_ring(DateVector formation_date, bool cell_wise, bool historic, double phi0, double pi0, double CRD0);
+RcppExport SEXP _xylomod_initialize_ring(SEXP formation_dateSEXP, SEXP cell_wiseSEXP, SEXP historicSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DateVector >::type formation_date(formation_dateSEXP);
     Rcpp::traits::input_parameter< bool >::type cell_wise(cell_wiseSEXP);
     Rcpp::traits::input_parameter< bool >::type historic(historicSEXP);
-    rcpp_result_gen = Rcpp::wrap(initialize_ring(cell_wise, historic));
+    Rcpp::traits::input_parameter< double >::type phi0(phi0SEXP);
+    Rcpp::traits::input_parameter< double >::type pi0(pi0SEXP);
+    Rcpp::traits::input_parameter< double >::type CRD0(CRD0SEXP);
+    rcpp_result_gen = Rcpp::wrap(initialize_ring(formation_date, cell_wise, historic, phi0, pi0, CRD0));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -109,7 +113,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_xylomod_expand_ring", (DL_FUNC) &_xylomod_expand_ring, 6},
     {"_xylomod_divide", (DL_FUNC) &_xylomod_divide, 6},
     {"_xylomod_grow_ring", (DL_FUNC) &_xylomod_grow_ring, 10},
-    {"_xylomod_initialize_ring", (DL_FUNC) &_xylomod_initialize_ring, 2},
+    {"_xylomod_initialize_ring", (DL_FUNC) &_xylomod_initialize_ring, 6},
     {NULL, NULL, 0}
 };
 
