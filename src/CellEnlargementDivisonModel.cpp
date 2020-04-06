@@ -127,7 +127,7 @@ DataFrame expand(DataFrame data,
 
   NumericVector psi = data["psi"];
   NumericVector Tc = data["Tc"];
-  StringVector date = data["date"];
+  DateVector date = data["date"];
   int l = data.nrow();
 
   NumericVector CRD(l);
@@ -314,8 +314,8 @@ List _grow_ring(List ring, double psi, double Tc, Date date,
   if (ring.attr("cell_wise")){
 
     // Calculate the whole number of cells formed at the current and previous timestep
-    double Pold = _sum(divisions["P"]); int Pold_int = floor(Pold);
-    double Pnew = Pold+P_i; int Pnew_int = floor(Pnew);
+    double Pnew = _sum(P); int Pnew_int = floor(Pnew);
+    double Pold = Pnew-P_i; int Pold_int = floor(Pold);
     // Add a new value in the cell expansion vectors for each whole cell number increment
     for (int i=0; i < Pnew_int-Pold_int; i++){
       // Update cell expansion vectors
@@ -371,16 +371,18 @@ List grow_ring(List ring, DataFrame data,
     double new_P = _sum(new_divisions["P"]);
     int new_cols = floor(new_P+remaining_P);
     ncols = previous_cols+new_cols;
-
   } else {
     ncols = previous_cols+nrows;
   }
 
   if(ring.attr("historic")){
 
-    NumericMatrix phi(nrows, ncols);
-    NumericMatrix pi(nrows, ncols);
-    NumericMatrix CRD(nrows, ncols);
+    NumericVector phi(nrows*ncols, NA_REAL);
+    phi.attr("dim") = Dimension(nrows, ncols);
+    NumericVector pi(nrows*ncols, NA_REAL);
+    pi.attr("dim") = Dimension(nrows, ncols);
+    NumericVector CRD(nrows*ncols, NA_REAL);
+    CRD.attr("dim") = Dimension(nrows, ncols);
 
     for(int i=0; i<nrows; i++){
       ring = _grow_ring(ring, psi[i], Tc[i], date[i],
@@ -391,8 +393,8 @@ List grow_ring(List ring, DataFrame data,
       NumericVector phi_i = cells["phi"];
       NumericVector pi_i = cells["pi"];
       NumericVector CRD_i = cells["CRD"];
-      int l = CRD_i.size();
 
+      int l = cells.nrow();
       for(int j=0; j<l; j++){
         phi(i,j) = phi_i[j];
         pi(i,j) = pi_i[j];
@@ -437,7 +439,7 @@ List grow_ring(List ring, DataFrame data,
 
 // [[Rcpp::export]]
 List initialize_ring(DateVector formation_date = NA_INTEGER,
-                     bool cell_wise = 0, bool historic = 0,
+                     bool cell_wise = false, bool historic = false,
                      double phi0=0.13, double pi0=-0.8, double CRD0=8.3){
 
   Date formation_date1 = formation_date[0];
