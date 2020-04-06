@@ -49,11 +49,11 @@ data <- example_input[150:250,]
 data$Tc <- data$Temp_air_mean
 
 ### Calculate cell expansion for a cell formed on DOY 150
-expansion <- expand(example_input)
+expansion <- expand(data)
 
 # Plot the result
-plot(CRD~date, data = expansion, type = "l", y
-     lab="Cell radial diameter (micrometers)")
+plot(CRD~date, data = expansion, type = "l",
+     ylab="Cell radial diameter (micrometers)")
 
 ### Calculate cell expansion for three different cells formed at specified dates
 # Initialize ring object
