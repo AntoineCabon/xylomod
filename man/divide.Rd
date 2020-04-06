@@ -55,9 +55,10 @@ Antoine Cabon, CTFC
 \examples{
 data("example_input") # example data set containing air temperature and soil water potential daily measurements over five years
 
-example_input <- example_input[1:365,] # select only the first year
+data <- example_input[1:365,] # select only the first year
+data$Tc <- data$Temp_air_mean
 
-divisions <- divide(example_input)
+divisions <- divide(data)
 plot(P~as.Date(date), data = divisions, type = "l", xlab="Date", ylab="Cell production (cell day-1)")
 sum(divisions$P) # gives the total number of cells formed during the year
 }

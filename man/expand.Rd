@@ -45,7 +45,8 @@ expand_ring(ring, data,
 data("example_input")
 
 # Select 100 days starting at the beginning of the growing season (DOY 150)
-example_input <- example_input[150:250,]
+data <- example_input[150:250,]
+data$Tc <- data$Temp_air_mean
 
 ### Calculate cell expansion for a cell formed on DOY 150
 expansion <- expand(example_input)
@@ -62,7 +63,7 @@ formation_dates <- c(as.Date("2010-06-01"),
 ring <- initialize_ring(formation_dates, historic = T)
 
 # Calculate cell expansion
-expand_ring(ring, example_input)
+expand_ring(ring, data)
 
 # Print cells state at the end of simulation
 ring$cells
