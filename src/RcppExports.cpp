@@ -20,6 +20,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// wall_thickness
+double wall_thickness(double WA, double CRD, double CTD);
+RcppExport SEXP _xylomod_wall_thickness(SEXP WASEXP, SEXP CRDSEXP, SEXP CTDSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type WA(WASEXP);
+    Rcpp::traits::input_parameter< double >::type CRD(CRDSEXP);
+    Rcpp::traits::input_parameter< double >::type CTD(CTDSEXP);
+    rcpp_result_gen = Rcpp::wrap(wall_thickness(WA, CRD, CTD));
+    return rcpp_result_gen;
+END_RCPP
+}
 // expand
 DataFrame expand(DataFrame data, double phi0, double pi0, double CRD0, double Y_P, double Y_T, double h, double s);
 RcppExport SEXP _xylomod_expand(SEXP dataSEXP, SEXP phi0SEXP, SEXP pi0SEXP, SEXP CRD0SEXP, SEXP Y_PSEXP, SEXP Y_TSEXP, SEXP hSEXP, SEXP sSEXP) {
@@ -109,6 +122,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_xylomod_T_fun", (DL_FUNC) &_xylomod_T_fun, 5},
+    {"_xylomod_wall_thickness", (DL_FUNC) &_xylomod_wall_thickness, 3},
     {"_xylomod_expand", (DL_FUNC) &_xylomod_expand, 8},
     {"_xylomod_expand_ring", (DL_FUNC) &_xylomod_expand_ring, 6},
     {"_xylomod_divide", (DL_FUNC) &_xylomod_divide, 6},
