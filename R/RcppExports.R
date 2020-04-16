@@ -5,6 +5,10 @@ T_fun <- function(Tc, Y_T = 8, DHa = 87.5e3, DSd = 1.09e3, DHd = 333e3) {
     .Call(`_xylomod_T_fun`, Tc, Y_T, DHa, DSd, DHd)
 }
 
+wall_thickness <- function(WA, CRD, CTD) {
+    .Call(`_xylomod_wall_thickness`, WA, CRD, CTD)
+}
+
 expand <- function(data, phi0 = 0.13, pi0 = -0.8, CRD0 = 8.3, Y_P = 0.05, Y_T = 5, h = 0.043*1.8, s = 1.8) {
     .Call(`_xylomod_expand`, data, phi0, pi0, CRD0, Y_P, Y_T, h, s)
 }

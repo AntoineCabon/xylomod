@@ -8,7 +8,7 @@ using namespace Rcpp;
 /// Constants
 double Rn = 8.314; // The perfect gas constant
 double T0 = -273.15; // Absolute 0 temperature in degC
-double Tref = 15; // Reference temperature in degC
+double Tref = 30; // Reference temperature in degC
 
 /// Utility functions
 // List _length_equalizer(NumericVector V1, NumericVector V2){
@@ -59,7 +59,7 @@ double _microT(double Tc, double inflection, double scale=5){
   return out;
 }
 
-double _metR(double Tc, double DHa, double DSd, double DHd){
+double _metR(double Tc, double DHa=87.5e3, double DSd=1.09e3, double DHd=333e3){
   double Tk = Tc-T0;
   double out = Tk*exp(-DHa/(Rn*Tk)) / (1+exp(DSd/Rn*(1-(DHd/(DSd*Tk)))));
   return out;
@@ -85,16 +85,51 @@ double _n2pi(double n, double V, double Tc){
   return pi;
 }
 
-
 ////// Cell expansion model
-
+// Cell expansion rate
 double _r(double psi, double Tc, double pi, double phi, double Y_P, double Y_T){
-  double out = phi*(psi-pi-Y_P);
+  double out = phi*(psi-pi-Y_P/T_fun(Tc,0));
   if(out<0) out=0;
   out = out*T_fun(Tc,Y_T);
   return out;
 }
 
+// Calculate cell wall thickness given cell dimensions and total wall area
+// [[Rcpp::export]]
+double wall_thickness(double WA, double CRD, double CTD){
+  double CP = 2*(CRD+CTD);
+  double WT = (CP-sqrt((pow(CP,2)-16*WA)))/8;
+  return(WT);
+}
+
+// Calculate wall deposition rate (Carteni et al 2018)
+double _dWA(double WA, double CRD, double CTD, double WAmax=915, double Vw=8.54, double Mw=505, double Sw = 4.18, double Si = 3){
+  double CA = CRD*CTD;
+  double res;
+  if(WA<CA && WA<WAmax){
+    res = Vw*Si*(1-WA/WAmax)*(1-1/pow(1+(CA-WA)/Mw, Sw));
+  } else {
+    res = 0;
+  }
+  return(res);
+}
+
+// Calculate varations in wall thickness given cell dimensions, current wall area and wall area variation
+double _dWT(double dWA, double WA, double CRD, double CTD){
+  double CP = 2*(CRD+CTD);
+  double dWT = dWA/sqrt(pow(CP,2)-16*WA);
+  return(dWT);
+}
+
+// Calculate corresponding relative changes in cell wall extensibility
+double _dphi(double CRD, double CTD = 20, double dWA = 10, double WA = 60){
+  double dWT = _dWT(dWA, WA, CRD, CTD);
+  double WT = wall_thickness(WA, CRD, CTD);
+  double dphi = -dWT/WT;
+  return(dphi);
+}
+
+// Cell expansion model
 DataFrame _expand(double psi, double Tc,
                   double phi0=0.13, double pi0=-0.8, double CRD0=8.3,
                   double Y_P=0.05, double Y_T=8, double h=0.043*1.8, double s=1.8){
@@ -103,16 +138,44 @@ DataFrame _expand(double psi, double Tc,
   double n = _pi2n(pi0, CRD0, Tref);
   pi0 = _n2pi(n, CRD0, Tc); // updates the value of pi0 which is given at Tref for the current temperature Tc
 
+  // Calculate cell wall thickness given call extensibility
+  double phiWT = 0.3; // wall thickness invarient extensibility (gives WT0=0.5 um for phi0=0.2; in agreement with Carteni et al 2018 Frontiers Plant Science)
+  double WT0 = phiWT/phi0;
+
+  // Cell geometry
+  double CTD = 30; // SI Cuny et al 2014 New Phytologist: relatively constant among species
+  double CA0 = CRD0*CTD;
+  double LA0 = (CRD0-2*WT0)*(CTD-2*WT0);
+  double WA0 = CA0-LA0;
+
   // Calculate relative volume expansion rate
   double r = _r(psi, Tc, pi0, phi0, Y_P, Y_T);
+
+  if(WT0 > 2){
+    // Threshold from Carteni et al 2018 Frontiers Plant Science: 2um
+    r = 0;
+  }
 
   // Variable update
   double CRD1 = CRD0*(1+r); // cell diameter (volume) increment
   double pi1 = _n2pi(n, CRD1, Tref); // pi is returned at Tref in order to be consistent with input
-  double phi1 = phi0 + phi0*(s*r - h*T_fun(Tc, -999)); //changes in cell wall properties. Hardening (thickening and lignification) is temperature sensitive but not threshold prone because lignification does not need microtubules
+
+  // h = -_dphi(CRD0, 20, h, 60); //
+  // double phi1 = phi0 + phi0*(s*r - h*T_fun(Tc, -999, 40e3)); ////changes in cell wall properties. Hardening (thickening and lignification) is temperature sensitive but not threshold prone because lignification does not need microtubules
+
+  // double dWA = _dWA(WA0, CRD0, CTD, 915, h);
+  double dWT = _dWT(h*T_fun(Tc, 0, 60e3), WA0, CRD0, CTD); //
+  double WT1 = WT0 - WT0*s*r + dWT;
+  double phi1 = phiWT/WT1;
+
   if(phi1<0) {
     phi1=0;
-  } else {}
+  }
+
+  if(WA0 > 400 || WA0 > CA0){
+    // Approximate parameter values found visually in SI Cuny et al 2014 New Phytologist
+    phi1 = phi0;
+  }
 
   // return outputs
   return(DataFrame::create(_["phi"]=phi1,
